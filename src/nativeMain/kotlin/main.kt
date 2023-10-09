@@ -1,7 +1,8 @@
+import kotlin.math.pow
 
-class Octet (var octet: Int)
-class IPv4Address (private var address: List<Octet>, private var cidr: Int){
+class IPv4Address (private var address: Array<Int>, private var cidr: Int){
 
+    private val bRange: Int = 32-cidr
     private val subnetMask = cidrToSubnetMask()
     private val network = getNetwork()
     private val wildcardMask = getWildcard()
@@ -9,6 +10,7 @@ class IPv4Address (private var address: List<Octet>, private var cidr: Int){
     private val usableRange = getRange()
     private val totalHosts = getTotalHosts()
     private val usableHosts = getUsableHosts()
+
 
 
 
@@ -22,42 +24,59 @@ class IPv4Address (private var address: List<Octet>, private var cidr: Int){
 
 
     private fun getNetwork(): Array<Int> {
-        return arrayOf(0,0,0,0)
+        var network: Array<Int> = arrayOf(0,0,0,0)
+        for (i in 0..3) {
+            val localVar: Int = address[i] and subnetMask[i]
+            network[i] = localVar
+        }
+        return network
     }
 
 
     private fun getWildcard(): Array<Int> {
-        return arrayOf(0,0,0,0)
+        var wildcard = arrayOf(0,0,0,0)
+        for (i in 0..<bRange) {
+            wildcard[3-i/8] = wildcard[3-i/8] + (1 shl (i%8))
+        }
+        return wildcard
     }
 
     private fun getBroadcast(): Array<Int> {
-        return arrayOf(0,0,0,0)
+        var broad = network.copyOf()
+        //FIXME: broadcast gets calculate wrong
+        for (i in 0..<bRange) {
+            broad[3-i/8] = broad[3-1/8] + (1 shl (i%8))
+        }
+        return broad
     }
 
 
     private fun getRange(): String {
-        return "0.0.0.0 - 255.255.255.255"
+        var firstIP = network.copyOf()
+        var lastIP = broadcast.copyOf()
+        firstIP[3] = firstIP[3] +1
+        lastIP[3] = lastIP[3] -1
+
+        var strFirstIP = printOctets(firstIP)
+        var strLastIP = printOctets(lastIP)
+        return "$strFirstIP - $strLastIP"
     }
 
 
     private fun getTotalHosts(): Int {
-        return 0
+        val total = 2.0.pow(bRange)
+        return total.toInt()
     }
 
 
     private fun getUsableHosts(): Int {
-        return 0
+        return totalHosts-2
     }
 
 
 
     fun printInfo () {
-        var strAddress= ""
-        for (i in address) {
-            strAddress += i.octet
-            strAddress += "."
-        }
-        strAddress = strAddress.dropLast(1)
+        val strAddress = printOctets(address)
         println("address: $strAddress")
 
         val strNetwork = printOctets(network)
@@ -100,11 +119,11 @@ fun resolveIPv4 (address: String): IPv4Address {
     val strNetmask: String = splits.last()
     val cidr = strNetmask.toInt()
     val strOctets: List<String> = ipv4.split(".")
-    val octets: MutableList<Octet> = mutableListOf()
+    var octetsList: MutableList<Int> = mutableListOf()
     for (octet in strOctets) {
-        octets.add(element = Octet(octet.toInt()))
+        octetsList.add(element = octet.toInt())
     }
-
+    val octets = octetsList.toTypedArray()
     return IPv4Address(address = octets, cidr = cidr)
 }
 
