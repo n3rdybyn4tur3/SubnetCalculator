@@ -1,3 +1,4 @@
+import platform.windows.NULL
 
 /**
  * resolve IPv4, converts string of address and cidr to IPv4Address object with address and cidr
@@ -23,17 +24,27 @@ fun resolveIPv4 (address: String): IPv4Address {
 
 
 
-
-
-
-
-
-
 fun main() {
-    println("Let's create a subnet calculator")
-    val myAddress = resolveIPv4("192.168.0.1/24")
+    print("Welcome to the Subnet Calculator. Press any key to continue...")
+    val uselessInput = readlnOrNull()
 
-    myAddress.printInfo()
+    do {
+        print("Enter an IPv4 address with CIDR (without space) or 'q' to quit: ")
+        val input = readlnOrNull()
+        if (input === null  || input == "q") {
+            continue
+        }
+
+        try {
+            val myAddress = resolveIPv4(input)
+            myAddress.printInfo()
+        } catch (e:Exception) {
+            println("Layer 8 caused an Error:")
+            println(e)
+            println()
+        }
+
+    } while (input != "q")
 }
 
 
