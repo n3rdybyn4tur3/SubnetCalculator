@@ -78,7 +78,7 @@ class IPv4Address (private var address: Array<Int>, private var cidr: Int){
     private fun getBroadcast(): Array<Int> {
         val broad = network.copyOf()
         for (i in 0..<4) {
-            broad[i] = broad[i] + netmask[i]
+            broad[i] = broad[i] + wildcardMask[i]
         }
         return broad
     }
