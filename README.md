@@ -18,7 +18,7 @@ Informaion about the network out of a given IP address with CIDR:
 - Initialize gradle (maybe need to update gradle version in build scripts)
 - update oprating system target
 - run build task
-'''console
+```console
 gradle build nativeBinaries
-'''
+```
 - run binaries located in ./build/native/debugExecutable/
